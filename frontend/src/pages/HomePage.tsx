@@ -1,26 +1,28 @@
 // import { useState } from 'react'
+import { useEffect } from 'react';
+import { useState } from 'react';
 import '../App.css';
 // import { useAccount } from 'wagmi';
-import { ConnectWallet } from '@coinbase/onchainkit/wallet';
-import { Wallet } from '@coinbase/onchainkit/wallet';
-import { Name } from '@coinbase/onchainkit/identity';
-import { Avatar } from '@coinbase/onchainkit/identity';
 import { Link } from 'react-router-dom';
+import { getAvailableGames } from '../api/games';
 
 function HomePage() {
+  const [games, setGames] = useState<bigint[]>([]);
+
+  useEffect(() => {
+    getAvailableGames().then(availableGames => setGames([...availableGames]));
+  });
+
   return (
     <>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      <Wallet>
-        <ConnectWallet>
-          <Avatar className="h-6 w-6" />
-          <Name />
-        </ConnectWallet>
-      </Wallet>
+      <div className="text-3xl font-bold">Welcome to Nim!</div>
+      <div className="text-xl">Please join an available game:</div>
       <div className="mt-4">
-        <Link to="/game/123" className="text-blue-500 hover:underline">
-          Go to sample game (ID: 123)
-        </Link>
+        {games.map((game, index) => (
+          <Link key={index} to={`/game/${game}`} className="text-blue-500 hover:underline block">
+            Join game #{game}
+          </Link>
+        ))}
       </div>
     </>
   );
