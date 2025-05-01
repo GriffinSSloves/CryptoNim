@@ -51,7 +51,7 @@ contract Nim {
 
     event GameCreated(uint256 indexed gameId, address indexed creator);
     event GameJoined(uint256 indexed gameId, address indexed joiner);
-    event TurnPlayed(uint256 indexed gameId, address indexed player, uint256 row, uint256 stones);
+    event TurnPlayed(uint256 indexed gameId, address indexed player, uint8 row, uint8 stones);
     event GameEnded(uint256 indexed gameId, address indexed winner);
     event PlayerStatsUpdated(address indexed player, uint256 gamesPlayed, uint256 gamesWon, uint256 gamesLost);
 
@@ -64,8 +64,8 @@ contract Nim {
     error CannotJoinOwnGame(uint256 gameId, address player);
     error GameAlreadyEnded(uint256 gameId, Player winner);
     error NotYourTurn(uint256 gameId, address currentPlayer);
-    error InvalidRow(uint256 gameId, uint256 row);
-    error InvalidStones(uint256 gameId, uint256 row, uint256 stones);
+    error InvalidRow(uint256 gameId, uint8 row);
+    error InvalidStones(uint256 gameId, uint8 row, uint8 stones);
 
     constructor(address owner_) {
         owner = owner_;
@@ -150,7 +150,7 @@ contract Nim {
     /// @param row The row to remove stones from (0-based index)
     /// @param stones The number of stones to remove
     /// @return The updated game state
-    function playTurn(uint256 gameId, uint256 row, uint256 stones) external returns (Game memory) {
+    function playTurn(uint256 gameId, uint8 row, uint8 stones) external returns (Game memory) {
         // Get the game from storage
         Game storage game = games[gameId];
 
