@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Game } from '../types/Game';
 import { joinGame, takeTurn, viewGame } from '../lib/gameApi';
 import { useAccount } from 'wagmi';
+import WinnerBanner from '../components/WinnerBanner';
 
 // export type Game = {
 //   gameId: bigint; // uint256 maps well to bigint
@@ -138,6 +139,12 @@ function GamePage() {
     if (isPlayer && hasPlayerTwo) {
       return (
         <>
+          <WinnerBanner
+            isGameOver={
+              game?.winner?.playerAddress !== '0x0000000000000000000000000000000000000000'
+            }
+            isWinner={game?.winner?.playerAddress === address}
+          />
           {/* Game board */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Game Board</h2>
@@ -196,7 +203,7 @@ function GamePage() {
                   disabled={
                     selectedStones <= 0 || selectedStones > Number(game?.rows[selectedRow] || 0)
                   }
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                  className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
                 >
                   Submit Move
                 </button>
