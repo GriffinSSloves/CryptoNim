@@ -28,32 +28,75 @@ Nim is a mathematical strategy game where two players take turns removing object
 - [MetaMask](https://metamask.io/) or other Web3 wallet
 - [Git](https://git-scm.com/)
 
+## SSH Setup
+
+1. Generate a new SSH key:
+
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com" -f ~/.ssh/id_ed25519_github
+```
+
+2. Add the SSH key to your GitHub account:
+
+   - Copy your public key:
+
+   ```bash
+   cat ~/.ssh/id_ed25519_github.pub
+   ```
+
+   - Go to GitHub → Settings → SSH and GPG keys → New SSH key
+   - Paste your public key and save
+
+3. Configure Git with your GitHub information:
+
+```bash
+git config --global user.name "Your GitHub Username"
+git config --global user.email "your_email@example.com"
+```
+
+4. Configure SSH to use your key:
+
+```bash
+echo -e "Host github.com\n  IdentityFile ~/.ssh/id_ed25519_github\n  User git" > ~/.ssh/config
+```
+
+5. Verify your connection:
+
+```bash
+ssh -T git@github.com
+```
+
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/GriffinSSloves/CryptoNim.git
 cd CryptoNim
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file in the root directory:
+
 ```bash
 touch frontend/.env
 ```
 
 4. Update the `.env` file with your configuration:
+
 ```bash
-VITE_ONCHAINKIT_API_KEY=<your API key> 
+VITE_ONCHAINKIT_API_KEY=<your API key>
 ```
 
 ## Running Locally
 
 1. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -72,11 +115,13 @@ npm run dev
 ## Testing
 
 Run the test suite:
+
 ```bash
 forge test
 ```
 
 For more detailed test output:
+
 ```bash
 forge test -vv
 ```
@@ -101,5 +146,4 @@ The smart contract provides the following main functions:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
