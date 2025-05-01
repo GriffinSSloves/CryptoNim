@@ -116,7 +116,7 @@ function GamePage() {
           <h2 className="text-lg font-semibold">Join this game as Player 2?</h2>
           <button
             onClick={handleJoinGame}
-            className="mt-3 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="mt-3 bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-600"
           >
             Join Game
           </button>
