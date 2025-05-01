@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { viewGame } from '../api/games';
 import { Game } from '../types/Game';
+import { viewGame } from '../lib/gameApi';
 
 function GamePage() {
   const { gameId } = useParams();
