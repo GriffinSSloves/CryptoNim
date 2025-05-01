@@ -34,7 +34,7 @@ contract Nim {
         bool playerOneTurn;
         Player playerOne;
         Player playerTwo;
-        string winner;
+        Player winner;
         uint48 lastUpdatedAt;
     }
 
@@ -89,6 +89,7 @@ contract Nim {
     error GameDoesNotExist(uint256 gameId, uint256 totalGames);
     error GameAlreadyHasTwoPlayers(uint256 gameId, address playerOne, address playerTwo);
     error CannotJoinOwnGame(uint256 gameId, address player);
+    error GameAlreadyEnded(uint256 gameId, Player winner);
 
 
 
@@ -138,7 +139,7 @@ contract Nim {
             playerOneTurn: true,
             playerOne: Player(msg.sender),
             playerTwo: Player(address(0)),
-            winner: "",
+            winner: Player(address(0)),
             lastUpdatedAt: uint48(block.timestamp)
         });
 
@@ -180,6 +181,7 @@ contract Nim {
 
         // Update game state
         game.playerTwo = Player(msg.sender);
+        game.lastUpdatedAt = uint48(block.timestamp);
 
         // Emit event
         emit GameJoined(gameId, msg.sender);
@@ -187,6 +189,71 @@ contract Nim {
         // Return the updated game
         return game;
     }
+
+    error NotYourTurn(uint256 gameId, address currentPlayer);
+    error InvalidRow(uint256 gameId, uint256 row);
+    error InvalidStones(uint256 gameId, uint256 row, uint256 stones);
+
+    /// @notice Play a turn in the game by removing stones from a row
+    /// @param gameId The ID of the game to play in
+    /// @param row The row to remove stones from (0-based index)
+    /// @param stones The number of stones to remove
+    /// @return The updated game state
+    function playTurn(uint256 gameId, uint256 row, uint256 stones) external returns (Game memory) {
+        // Get the game from storage
+        Game storage game = games[gameId];
+
+        // Check if game exists
+        if (gameId >= games.length) revert GameDoesNotExist(gameId, games.length);
+
+        // Check if game has ended
+        if (game.winner.playerAddress != address(0)) revert GameAlreadyEnded(gameId, game.winner);
+
+        // Check if it's the player's turn
+        address currentPlayer = game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
+        if (msg.sender != currentPlayer) revert NotYourTurn(gameId, currentPlayer);
+
+        // Check if row is valid
+        if (row >= game.rows.length) revert InvalidRow(gameId, row);
+
+        // Check if stones input is valid
+        if (stones == 0 || stones > game.rows[row]) revert InvalidStones(gameId, row, stones);
+
+        // Update game state
+        game.rows[row] -= stones;
+        game.playerOneTurn = !game.playerOneTurn;
+        game.lastUpdatedAt = uint48(block.timestamp);
+
+        // Check for win condition (no stones left)
+        bool gameEnded = true;
+        for (uint i = 0; i < game.rows.length; i++) {
+            if (game.rows[i] > 0) {
+                gameEnded = false;
+                break;
+            }
+        }
+
+        if (gameEnded) {
+            // The player who just played lost (took the last stone)
+            // The other player wins
+            address winningPlayer = game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
+            game.winner = Player(winningPlayer);
+            emit GameEnded(gameId, winningPlayer);
+        } else {
+            emit TurnPlayed(gameId, currentPlayer, row, stones);
+        }
+
+        return game;
+    }
+
+    /// @notice View the current state of a game
+    /// @param gameId The ID of the game to view
+    /// @return The current game state
+    function viewGame(uint256 gameId) external view returns (Game memory) {
+        // Check if game exists
+        if (gameId >= games.length) revert GameDoesNotExist(gameId, games.length);
+        
+        // Return the game state
+        return games[gameId];
+    }
 }
-
-
