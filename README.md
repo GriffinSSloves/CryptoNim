@@ -1,5 +1,9 @@
 # CryptoNim
 
+**Let's play Nim!**
+
+![Nim game with stones arranged in rows](docs/nim-game.png)
+
 A decentralized implementation of the classic game of Nim, built on Ethereum.
 
 ## What is Nim?
