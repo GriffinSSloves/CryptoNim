@@ -1,6 +1,6 @@
 import { Address } from 'viem';
 
-export const gamesContract = '0x0581D5505043798178E0BfBAc33486C62bE44d41' as Address;
+export const gamesContract = '0x779afc797C78f1727b7286c7Ac20ae9a12C317C3' as Address;
 export const gamesAbi = [
   {
     type: 'constructor',
