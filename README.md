@@ -58,7 +58,7 @@ VITE_ONCHAINKIT_API_KEY=<your API key>
 npm run dev
 ```
 
-2. Open your browser and navigate to `http://localhost:<port output from npm run dev>
+2. Open your browser and navigate to `http://localhost:<port>`
 
 ## Playing the Game
 
@@ -87,7 +87,7 @@ The smart contract provides the following main functions:
 
 - `initializeGame()`: Creates a new game with a random board
 - `joinGame(gameId)`: Allows a second player to join an existing game
-- `playTurn(gameId, row, stones)`: Takes a turn by removing stones from a row
+- `playTurn(gameId, row, stones)`: Takes a turn by removing stones from a row. Rows are 0-indexed.
 - `viewGame(gameId)`: Returns the current state of a game
 - `getAvailableGames()`: Lists all games waiting for a second player
 
