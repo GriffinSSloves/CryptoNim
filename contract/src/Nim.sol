@@ -168,7 +168,7 @@ contract Nim {
         if (stones == 0 || stones > game.rows[row]) revert InvalidStones(gameId, row, stones);
 
         // Update game state
-        game.rows[row] -= uint8(stones);
+        game.rows[row] -= stones;
 
         // Check for win condition (no stones left)
         bool gameEnded = true;
