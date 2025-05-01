@@ -73,6 +73,7 @@ npm run dev
 
 Run the test suite:
 ```bash
+cd contract
 forge test
 ```
 
