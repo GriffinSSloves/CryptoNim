@@ -55,10 +55,6 @@ contract Nim {
     event GameEnded(uint256 indexed gameId, address indexed winner);
     event PlayerStatsUpdated(address indexed player, uint256 gamesPlayed, uint256 gamesWon, uint256 gamesLost);
 
-    /**
-     * Errors can provide more context about why an execution failed
-     * Errors can have named arguments
-     */
     error GameDoesNotExist(uint256 gameId, uint256 totalGames);
     error GameAlreadyHasTwoPlayers(uint256 gameId, address playerOne, address playerTwo);
     error CannotJoinOwnGame(uint256 gameId, address player);
