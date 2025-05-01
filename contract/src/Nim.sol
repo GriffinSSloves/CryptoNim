@@ -4,24 +4,24 @@ pragma solidity ^0.8.13;
 /// @notice A smart contract implementation of the classic game Nim
 contract Nim {
 
-    uint8 public constant MAX_ROWS = 10;
-    uint8 public constant MAX_STONES = 10;
+    uint256 public constant MAX_ROWS = 10;
+    uint256 public constant MAX_STONES = 10;
 
     // Generate random number between 1 and x
-    function random(uint8 x) internal view returns (uint8) {
+    function random(uint256 x) internal view returns (uint256) {
         // Use block data as a source of randomness
         // This is not perfectly random but sufficient for many use cases
-        return uint8(uint256(keccak256(abi.encodePacked(
+        return uint256(keccak256(abi.encodePacked(
             block.timestamp,
             block.prevrandao,
             blockhash(block.number - 1),
             msg.sender
-        ))) % x + 1);
+        ))) % x + 1;
     }
 
     struct Game {
         uint256 gameId;
-        uint8[] rows;
+        uint256[] rows;
         bool playerOneTurn;
         Player playerOne;
         Player playerTwo;
@@ -33,14 +33,12 @@ contract Nim {
         address playerAddress;
     }
 
+    address public immutable owner;
     struct PlayerStats {
         uint256 gamesPlayed;
         uint256 gamesWon;
         uint256 gamesLost;
     }
-
-    // Storage variables persist on contract and can be accessed anytime
-    address public owner;
 
     // Track player statistics
     mapping(address => PlayerStats) public playerStats;
@@ -49,49 +47,13 @@ contract Nim {
     address[] public topPlayers;
     uint256 constant MAX_TOP_PLAYERS = 10;
 
-    /**
-     * Mappings are key-value hashmaps
-     *
-     * conner => 2
-     * xander => 0
-     */
-    // mapping(address attendee => uint256 total) public totalAttendence;
-
-    /**
-     * Arrays are mappings with length storage
-     *
-     * length = 2
-     * 0 => Session({0, 1, 0})
-     * 1 => Session({10, 20, 100})
-     */
     Game[] public games;
-
 
     event GameCreated(uint256 indexed gameId, address indexed creator);
     event GameJoined(uint256 indexed gameId, address indexed joiner);
-    event TurnPlayed(uint256 indexed gameId, address indexed player, uint8 row, uint8 stones);
+    event TurnPlayed(uint256 indexed gameId, address indexed player, uint256 row, uint256 stones);
     event GameEnded(uint256 indexed gameId, address indexed winner);
-
-
-    /**
-     * Mappings can be nested for multiple independent keys
-     *
-     * 0 => conner => true
-     * 1 => conner => true
-     */
-    // mapping(uint256 sessionId => mapping(address attendee => bool attended)) public hasAttended;
-
-    /**
-     * Events or "logs" can be emitted to enable easier offchain parsing of state changes
-     * Events can have named arguments
-     */
-
-    event GameCreated(uint256 gameId, address creator);
-    event GameJoined(uint256 gameId, address joiner);
-    event TurnPlayed(uint256 gameId, address player, uint256 row, uint256 stones);
-    event GameEnded(uint256 gameId, address winner);
-    event PlayerStatsUpdated(address player, uint256 gamesPlayed, uint256 gamesWon, uint256 gamesLost);
-
+    event PlayerStatsUpdated(address indexed player, uint256 gamesPlayed, uint256 gamesWon, uint256 gamesLost);
 
     /**
      * Errors can provide more context about why an execution failed
@@ -102,9 +64,8 @@ contract Nim {
     error CannotJoinOwnGame(uint256 gameId, address player);
     error GameAlreadyEnded(uint256 gameId, Player winner);
     error NotYourTurn(uint256 gameId, address currentPlayer);
-    error InvalidRow(uint256 gameId, uint8 row);
-    error InvalidStones(uint256 gameId, uint8 row, uint8 stones);
-
+    error InvalidRow(uint256 gameId, uint256 row);
+    error InvalidStones(uint256 gameId, uint256 row, uint256 stones);
 
     constructor(address owner_) {
         owner = owner_;
@@ -117,13 +78,13 @@ contract Nim {
 
     function initializeGame() external returns (Game memory) {
         // Generate random number of rows between 1 and MAX_ROWS
-        uint8 numRows = random(MAX_ROWS);
+        uint256 numRows = random(MAX_ROWS);
         
         // Create array for rows
-        uint8[] memory rowStones = new uint8[](numRows);
+        uint256[] memory rowStones = new uint256[](numRows);
         
         // Fill each row with random number of stones between 1 and MAX_STONES
-        for (uint8 i = 0; i < numRows; i++) {
+        for (uint256 i = 0; i < numRows; i++) {
             rowStones[i] = random(MAX_STONES);
         }
 
@@ -189,11 +150,12 @@ contract Nim {
     /// @param row The row to remove stones from (0-based index)
     /// @param stones The number of stones to remove
     /// @return The updated game state
-    function playTurn(uint256 gameId, uint8 row, uint8 stones) external returns (Game memory) {
+    function playTurn(uint256 gameId, uint256 row, uint256 stones) external returns (Game memory) {
         // Get the game from storage
-        if (gameId >= games.length) revert GameDoesNotExist(gameId, games.length);
-
         Game storage game = games[gameId];
+
+        // Check if game exists
+        if (gameId >= games.length) revert GameDoesNotExist(gameId, games.length);
 
         // Check if game has ended
         if (game.winner.playerAddress != address(0)) revert GameAlreadyEnded(gameId, game.winner);
@@ -210,12 +172,10 @@ contract Nim {
 
         // Update game state
         game.rows[row] -= stones;
-        game.playerOneTurn = !game.playerOneTurn;
-        game.lastUpdatedAt = uint48(block.timestamp);
 
         // Check for win condition (no stones left)
         bool gameEnded = true;
-        for (uint8 i = 0; i < game.rows.length; i++) {
+        for (uint256 i = 0; i < game.rows.length; i++) {
             if (game.rows[i] > 0) {
                 gameEnded = false;
                 break;
@@ -225,7 +185,7 @@ contract Nim {
         if (gameEnded) {
             // The player who just played lost (took the last stone)
             // The other player wins
-            address winningPlayer = game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
+            address winningPlayer = !game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
             address losingPlayer = currentPlayer;
             
             // Update player stats
@@ -250,6 +210,10 @@ contract Nim {
         } else {
             emit TurnPlayed(gameId, currentPlayer, row, stones);
         }
+
+        // Toggle turn after everything else
+        game.playerOneTurn = !game.playerOneTurn;
+        game.lastUpdatedAt = uint48(block.timestamp);
 
         return game;
     }
