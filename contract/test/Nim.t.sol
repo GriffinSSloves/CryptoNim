@@ -101,6 +101,11 @@ contract NimTest is Test {
         // Player2 takes some stones
         vm.prank(player2);
         game = nim.playTurn(gameId, 0, 1);
+
+        // Assert
+        assertEq(game.rows[0], initialStones - 2);
+        assertTrue(game.playerOneTurn);
+        assertEq(game.winner.playerAddress, address(0));
     }
 
     function test_playTurn_revert_notYourTurn() public {
