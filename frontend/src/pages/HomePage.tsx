@@ -4,7 +4,7 @@ import { useState } from 'react';
 import '../App.css';
 // import { useAccount } from 'wagmi';
 import { Link } from 'react-router-dom';
-import { getAvailableGames } from '../api/games';
+import { getAvailableGames } from '../lib/gameApi';
 
 function HomePage() {
   const [games, setGames] = useState<bigint[]>([]);
