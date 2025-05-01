@@ -55,3 +55,8 @@ cache/
 # Miscellaneous
 .tmp
 .temp 
+
+# Foundry
+/contract/out/
+/contract/cache/
+/contract/broadcast/
