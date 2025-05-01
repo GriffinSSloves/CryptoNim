@@ -4,19 +4,19 @@ pragma solidity ^0.8.13;
 /// @notice A smart contract implementation of the classic game Nim
 contract Nim {
 
-    uint256 public constant MAX_ROWS = 10;
-    uint256 public constant MAX_STONES = 10;
+    uint8 public constant MAX_ROWS = 10;
+    uint8 public constant MAX_STONES = 10;
 
     // Generate random number between 1 and x
-    function random(uint256 x) internal view returns (uint256) {
+    function random(uint8 x) internal view returns (uint8) {
         // Use block data as a source of randomness
         // This is not perfectly random but sufficient for many use cases
-        return uint256(keccak256(abi.encodePacked(
+        return uint8(uint256(keccak256(abi.encodePacked(
             block.timestamp,
             block.prevrandao,
             blockhash(block.number - 1),
             msg.sender
-        ))) % x + 1;
+        ))) % x + 1);
     }
 
     struct Game {
