@@ -256,4 +256,31 @@ contract Nim {
         // Return the game state
         return games[gameId];
     }
+
+    /// @notice Get games available to join
+    /// @return Array of available games IDs
+    function getAvailableGames() external view returns (uint256[] memory) {
+        // Count available games first
+        uint availableCount = 0;
+        for (uint i = 0; i < games.length; i++) {
+            // Check if player two slot is empty (game is available)
+            if (games[i].playerTwo == address(0)) {
+                availableCount++;
+            }
+        }
+
+        // Create the array with the exact size needed
+        uint256 memory availableGames = new uint256[](availableCount);
+
+        // Populate the array
+        uint currentIndex = 0;
+        for (uint i = 0; i < games.length; i++) {
+            if (games[i].playerTwo == address(0)) {
+                availableGames[currentIndex] = games[i].gameId;
+                currentIndex++;
+            }
+        }
+
+        return availableGames;
+    }
 }
