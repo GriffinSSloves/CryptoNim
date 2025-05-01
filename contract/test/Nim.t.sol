@@ -8,8 +8,14 @@ contract NimTest is Test {
     Nim public nim;
     address public player1;
     address public player2;
+    uint256 public seed;
 
     function setUp() public {
+        // Set a fixed seed for deterministic testing
+        seed = 12345;
+        vm.roll(seed);  // Set block number
+        vm.warp(seed);  // Set timestamp
+        
         // Create test accounts
         player1 = address(1);
         player2 = address(2);
@@ -182,7 +188,7 @@ contract NimTest is Test {
         }
 
         // Assert game ended
-        assertEq(game.winner.playerAddress, player2); // Player2 wins because they took the last stone
+        assertEq(game.winner.playerAddress, player1); // Player1 wins because Player2 took the last stone
     }
 
     function test_viewGame_success() public {

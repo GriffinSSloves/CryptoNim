@@ -4,7 +4,8 @@ pragma solidity ^0.8.13;
 /// @notice A smart contract implementation of the classic game Nim
 contract Nim {
 
-    uint8 public constant MAX_ROWS = 10;
+    uint8 public constant MAX_ROWS = 7;
+    uint8 public constant MIN_ROWS = 3;
     uint8 public constant MAX_STONES = 10;
 
     // Generate random number between 1 and x
@@ -73,8 +74,8 @@ contract Nim {
     }
 
     function initializeGame() external returns (Game memory) {
-        // Generate random number of rows between 1 and MAX_ROWS
-        uint8 numRows = uint8(random(MAX_ROWS));
+        // Generate random number of rows between MIN_ROWS and MAX_ROWS
+        uint8 numRows = uint8(random(MAX_ROWS - MIN_ROWS + 1)) + MIN_ROWS - 1;
         
         // Create array for rows
         uint8[] memory rowStones = new uint8[](numRows);
@@ -171,7 +172,7 @@ contract Nim {
 
         // Check for win condition (no stones left)
         bool gameEnded = true;
-        for (uint256 i = 0; i < game.rows.length; i++) {
+        for (uint8 i = 0; i < game.rows.length; i++) {
             if (game.rows[i] > 0) {
                 gameEnded = false;
                 break;
@@ -181,7 +182,7 @@ contract Nim {
         if (gameEnded) {
             // The player who just played lost (took the last stone)
             // The other player wins
-            address winningPlayer = !game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
+            address winningPlayer = game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
             address losingPlayer = currentPlayer;
             
             // Update player stats
