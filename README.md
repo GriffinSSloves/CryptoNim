@@ -28,32 +28,39 @@ Nim is a mathematical strategy game where two players take turns removing object
 - [MetaMask](https://metamask.io/) or other Web3 wallet
 - [Git](https://git-scm.com/)
 
+For development setup instructions (SSH, Git configuration, etc.), see the [Development Documentation](docs/README.md).
+
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/GriffinSSloves/CryptoNim.git
 cd CryptoNim
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file in the root directory:
+
 ```bash
 touch frontend/.env
 ```
 
 4. Update the `.env` file with your configuration:
+
 ```bash
-VITE_ONCHAINKIT_API_KEY=<your API key> 
+VITE_ONCHAINKIT_API_KEY=<your API key>
 ```
 
 ## Running Locally
 
 1. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -72,12 +79,14 @@ npm run dev
 ## Testing
 
 Run the test suite:
+
 ```bash
 cd contract
 forge test
 ```
 
 For more detailed test output:
+
 ```bash
 forge test -vv
 ```
@@ -102,5 +111,4 @@ The smart contract provides the following main functions:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
