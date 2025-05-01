@@ -8,14 +8,14 @@ export function Providers(props: { children: ReactNode }) {
   return (
     <OnchainKitProvider
       apiKey={import.meta.env.VITE_ONCHAINKIT_API_KEY}
-          chain={baseSepolia}
-          config={{ appearance: { 
-            mode: 'auto',
-        }
+      chain={baseSepolia}
+      config={{
+        appearance: {
+          mode: 'auto',
+        },
       }}
     >
       {props.children}
     </OnchainKitProvider>
   );
 }
-
