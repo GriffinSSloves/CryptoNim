@@ -10,14 +10,40 @@ contract Nim {
 
     // Generate random number between 1 and x
     function random(uint8 x) internal view returns (uint8) {
-        // Use block data as a source of randomness
-        // This is not perfectly random but sufficient for many use cases
-        return uint8(uint256(keccak256(abi.encodePacked(
+        // Use multiple sources of entropy for better randomness
+        bytes32 seed = keccak256(abi.encodePacked(
             block.timestamp,
             block.prevrandao,
             blockhash(block.number - 1),
+            blockhash(block.number - 2),  // Add previous block hash
+            block.gaslimit,
+            block.number,
+            msg.sender,
+            address(this),  // Add contract address
+            gasleft(),  // Add remaining gas
+            block.coinbase,  // Add miner address
+            block.basefee,  // Add base fee
+            block.chainid  // Add chain ID
+        ));
+        
+        // Use a second hash to further mix the entropy
+        bytes32 mixed = keccak256(abi.encodePacked(
+            seed,
+            block.timestamp,
+            block.prevrandao,
+            blockhash(block.number - 1)
+        ));
+        
+        // Use a third hash with different mixing
+        bytes32 finalMix = keccak256(abi.encodePacked(
+            mixed,
+            block.difficulty,
+            block.gaslimit,
             msg.sender
-        ))) % x + 1);
+        ));
+        
+        // Convert to uint8 and ensure it's within range
+        return uint8(uint256(finalMix) % x + 1);
     }
 
     struct Game {
