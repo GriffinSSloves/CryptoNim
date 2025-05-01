@@ -21,7 +21,7 @@ contract Nim {
 
     struct Game {
         uint256 gameId;
-        uint256[] rows;
+        uint8[] rows;
         bool playerOneTurn;
         Player playerOne;
         Player playerTwo;
@@ -78,14 +78,14 @@ contract Nim {
 
     function initializeGame() external returns (Game memory) {
         // Generate random number of rows between 1 and MAX_ROWS
-        uint256 numRows = random(MAX_ROWS);
+        uint8 numRows = uint8(random(MAX_ROWS));
         
         // Create array for rows
-        uint256[] memory rowStones = new uint256[](numRows);
+        uint8[] memory rowStones = new uint8[](numRows);
         
         // Fill each row with random number of stones between 1 and MAX_STONES
-        for (uint256 i = 0; i < numRows; i++) {
-            rowStones[i] = random(MAX_STONES);
+        for (uint8 i = 0; i < numRows; i++) {
+            rowStones[i] = uint8(random(MAX_STONES));
         }
 
         // Create new game
@@ -171,7 +171,7 @@ contract Nim {
         if (stones == 0 || stones > game.rows[row]) revert InvalidStones(gameId, row, stones);
 
         // Update game state
-        game.rows[row] -= stones;
+        game.rows[row] -= uint8(stones);
 
         // Check for win condition (no stones left)
         bool gameEnded = true;
