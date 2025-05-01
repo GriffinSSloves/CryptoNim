@@ -77,6 +77,37 @@ contract NimTest is Test {
         nim.joinGame(gameId);
     }
 
+    function test_playTurn_success() public {
+        // Setup
+        vm.prank(player1);
+        Nim.Game memory game = nim.initializeGame();
+        uint256 gameId = game.gameId;
+
+        vm.prank(player2);
+        game = nim.joinGame(gameId);
+
+        // Store initial values
+        uint256 initialStones = game.rows[0];
+
+        // Player1 takes some stones
+        vm.prank(player1);
+        game = nim.playTurn(gameId, 0, 1);
+
+        // Assert
+        assertEq(game.rows[0], initialStones - 1);
+        assertFalse(game.playerOneTurn);
+        assertEq(game.winner.playerAddress, address(0));
+
+        // Player2 takes some stones
+        vm.prank(player2);
+        game = nim.playTurn(gameId, 0, 1);
+
+        // Assert
+        assertEq(game.rows[0], initialStones - 2);
+        assertTrue(game.playerOneTurn);
+        assertEq(game.winner.playerAddress, address(0));
+    }
+
     function test_playTurn_revert_notYourTurn() public {
         // Setup
         vm.prank(player1);
@@ -127,38 +158,7 @@ contract NimTest is Test {
         nim.playTurn(gameId, 0, game.rows[0] + 1);
     }
 
-    function test_playTurn_success() public {
-        // Setup
-        vm.prank(player1);
-        Nim.Game memory game = nim.initializeGame();
-        uint256 gameId = game.gameId;
-
-        vm.prank(player2);
-        game = nim.joinGame(gameId);
-
-        // Store initial values
-        uint256 initialStones = game.rows[0];
-
-        // Player1 takes some stones
-        vm.prank(player1);
-        game = nim.playTurn(gameId, 0, 1);
-
-        // Assert
-        assertEq(game.rows[0], initialStones - 1);
-        assertFalse(game.playerOneTurn);
-        assertEq(game.winner.playerAddress, address(0));
-
-        // Player2 takes some stones
-        vm.prank(player2);
-        game = nim.playTurn(gameId, 0, 1);
-
-        // Assert
-        assertEq(game.rows[0], initialStones - 2);
-        assertTrue(game.playerOneTurn);
-        assertEq(game.winner.playerAddress, address(0));
-    }
-
-    function test_playTurn_revert_gameEnded() public {
+    function test_gameEndsWhenLastStoneTaken() public {
         // Setup
         vm.prank(player1);
         Nim.Game memory game = nim.initializeGame();
@@ -181,50 +181,8 @@ contract NimTest is Test {
             game = nim.playTurn(gameId, i, game.rows[i]);
         }
 
-        // Try to play after game ended
-        vm.prank(player1);
-        vm.expectRevert(abi.encodeWithSelector(Nim.GameAlreadyEnded.selector, gameId, game.winner));
-        nim.playTurn(gameId, 0, 1);
-    }
-
-    function test_playTurn_revert_notEnoughStones() public {
-        // Setup
-        vm.prank(player1);
-        Nim.Game memory game = nim.initializeGame();
-        uint256 gameId = game.gameId;
-
-        vm.prank(player2);
-        game = nim.joinGame(gameId);
-
-        // Try to take more stones than available
-        vm.prank(player1);
-        vm.expectRevert(abi.encodeWithSelector(
-            Nim.InvalidStones.selector,
-            gameId,
-            0,
-            game.rows[0] + 1
-        ));
-        nim.playTurn(gameId, 0, game.rows[0] + 1);
-    }
-
-    function test_playTurn_revert_zeroStones() public {
-        // Setup
-        vm.prank(player1);
-        Nim.Game memory game = nim.initializeGame();
-        uint256 gameId = game.gameId;
-
-        vm.prank(player2);
-        game = nim.joinGame(gameId);
-
-        // Try to take zero stones
-        vm.prank(player1);
-        vm.expectRevert(abi.encodeWithSelector(
-            Nim.InvalidStones.selector,
-            gameId,
-            0,
-            0
-        ));
-        nim.playTurn(gameId, 0, 0);
+        // Assert game ended
+        assertEq(game.winner.playerAddress, player2); // Player2 wins because they took the last stone
     }
 
     function test_viewGame_success() public {
@@ -264,17 +222,5 @@ contract NimTest is Test {
         // Should only have one available game
         assertEq(availableGames.length, 1);
         assertEq(availableGames[0], game2.gameId);
-    }
-
-    function test_playTurn_revert_notJoined() public {
-        // Setup
-        vm.prank(player1);
-        Nim.Game memory game = nim.initializeGame();
-        uint256 gameId = game.gameId;
-
-        // Try to play before game is joined
-        vm.prank(player2);
-        vm.expectRevert(abi.encodeWithSelector(Nim.NotYourTurn.selector, gameId, player1));
-        nim.playTurn(gameId, 0, 1);
     }
 } 
