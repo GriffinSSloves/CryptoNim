@@ -71,8 +71,15 @@ contract Nim {
         uint8[] memory rowStones = new uint8[](numRows);
         
         // Fill each row with random number of stones between 1 and MAX_STONES
-        for (uint8 i = 0; i < numRows; i++) {
-            rowStones[i] = random(MAX_STONES);
+        for (uint i = 0; i < numRows; i++) {
+            // Include 'i' in the hash input to make it unique per row
+            rowStones[i] = uint(keccak256(abi.encodePacked(
+                block.timestamp,
+                block.prevrandao,
+                blockhash(block.number - 1),
+                msg.sender,
+                i // Add the loop index here
+            ))) % MAX_STONES + 1;
         }
 
         // Create new game
