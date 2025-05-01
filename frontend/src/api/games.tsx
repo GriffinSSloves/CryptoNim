@@ -11,6 +11,31 @@ export function parseGame(result?: [number, number, bigint] | readonly [number, 
   };
 }
 
+// This is really to get one game, from the games function
+// export async function getGames(gameId) {
+
+// }
+
+export async function viewGame(gameId: bigint) {
+  try {
+    const publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: http(),
+    });
+
+    const game = await publicClient.readContract({
+      address: gamesContract,
+      abi: gamesAbi,
+      functionName: 'viewGame',
+      args: [gameId],
+    });
+    return game;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+}
+
 export async function getAvailableGames() {
   //   const PAGE_SIZE = 50;
   try {
