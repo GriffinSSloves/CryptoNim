@@ -1,6 +1,6 @@
 import { createPublicClient, createWalletClient, encodeFunctionData, Hex, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import { gamesAbi, gamesContract } from './games';
+import { gamesAbi, gamesContract } from './Games';
 import { privateKeyToAccount } from 'viem/accounts';
 import { APP_ENV } from '../getEnv';
 
