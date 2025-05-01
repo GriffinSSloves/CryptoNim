@@ -58,6 +58,24 @@ export async function getAvailableGames() {
   }
 }
 
+export async function createGame() {
+  const privateKey = APP_ENV.privateKey;
+  const account = privateKeyToAccount(privateKey as Hex);
+  const walletClient = createWalletClient({
+    account,
+    chain: baseSepolia,
+    transport: http(),
+  });
+
+  const transactionHash = await walletClient.writeContract({
+    address: gamesContract,
+    abi: gamesAbi,
+    functionName: 'initializeGame',
+    args: [],
+  });
+  return transactionHash;
+}
+
 export async function joinGame(gameId: bigint) {
   const privateKey = APP_ENV.privateKey;
   const account = privateKeyToAccount(privateKey as Hex);
