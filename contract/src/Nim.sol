@@ -34,16 +34,26 @@ contract Nim {
     }
 
     address public immutable owner;
+    struct PlayerStats {
+        uint256 gamesPlayed;
+        uint256 gamesWon;
+        uint256 gamesLost;
+    }
 
+    // Track player statistics
+    mapping(address => PlayerStats) public playerStats;
+
+    // Track top players
+    address[] public topPlayers;
+    uint256 constant MAX_TOP_PLAYERS = 10;
 
     Game[] public games;
-
 
     event GameCreated(uint256 indexed gameId, address indexed creator);
     event GameJoined(uint256 indexed gameId, address indexed joiner);
     event TurnPlayed(uint256 indexed gameId, address indexed player, uint8 row, uint8 stones);
     event GameEnded(uint256 indexed gameId, address indexed winner);
-
+    event PlayerStatsUpdated(address indexed player, uint256 gamesPlayed, uint256 gamesWon, uint256 gamesLost);
 
     error GameDoesNotExist(uint256 gameId, uint256 totalGames);
     error GameAlreadyHasTwoPlayers(uint256 gameId, address playerOne, address playerTwo);
@@ -52,7 +62,6 @@ contract Nim {
     error NotYourTurn(uint256 gameId, address currentPlayer);
     error InvalidRow(uint256 gameId, uint8 row);
     error InvalidStones(uint256 gameId, uint8 row, uint8 stones);
-
 
     constructor(address owner_) {
         owner = owner_;
@@ -65,14 +74,14 @@ contract Nim {
 
     function initializeGame() external returns (Game memory) {
         // Generate random number of rows between 1 and MAX_ROWS
-        uint8 numRows = random(MAX_ROWS);
+        uint8 numRows = uint8(random(MAX_ROWS));
         
         // Create array for rows
         uint8[] memory rowStones = new uint8[](numRows);
         
         // Fill each row with random number of stones between 1 and MAX_STONES
         for (uint8 i = 0; i < numRows; i++) {
-            rowStones[i] = random(MAX_STONES);
+            rowStones[i] = uint8(random(MAX_STONES));
         }
 
         // Create new game
@@ -139,9 +148,10 @@ contract Nim {
     /// @return The updated game state
     function playTurn(uint256 gameId, uint8 row, uint8 stones) external returns (Game memory) {
         // Get the game from storage
-        if (gameId >= games.length) revert GameDoesNotExist(gameId, games.length);
-
         Game storage game = games[gameId];
+
+        // Check if game exists
+        if (gameId >= games.length) revert GameDoesNotExist(gameId, games.length);
 
         // Check if game has ended
         if (game.winner.playerAddress != address(0)) revert GameAlreadyEnded(gameId, game.winner);
@@ -157,13 +167,11 @@ contract Nim {
         if (stones == 0 || stones > game.rows[row]) revert InvalidStones(gameId, row, stones);
 
         // Update game state
-        game.rows[row] -= stones;
-        game.playerOneTurn = !game.playerOneTurn;
-        game.lastUpdatedAt = uint48(block.timestamp);
+        game.rows[row] -= uint8(stones);
 
         // Check for win condition (no stones left)
         bool gameEnded = true;
-        for (uint8 i = 0; i < game.rows.length; i++) {
+        for (uint256 i = 0; i < game.rows.length; i++) {
             if (game.rows[i] > 0) {
                 gameEnded = false;
                 break;
@@ -173,12 +181,35 @@ contract Nim {
         if (gameEnded) {
             // The player who just played lost (took the last stone)
             // The other player wins
-            address winningPlayer = game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
+            address winningPlayer = !game.playerOneTurn ? game.playerOne.playerAddress : game.playerTwo.playerAddress;
+            address losingPlayer = currentPlayer;
+            
+            // Update player stats
+            PlayerStats storage winnerStats = playerStats[winningPlayer];
+            PlayerStats storage loserStats = playerStats[losingPlayer];
+            
+            winnerStats.gamesPlayed++;
+            winnerStats.gamesWon++;
+            loserStats.gamesPlayed++;
+            loserStats.gamesLost++;
+            
+            // Update top players list
+            updateTopPlayers(winningPlayer);
+            
+            // Update game state
             game.winner = Player(winningPlayer);
+            
+            // Emit events
             emit GameEnded(gameId, winningPlayer);
+            emit PlayerStatsUpdated(winningPlayer, winnerStats.gamesPlayed, winnerStats.gamesWon, winnerStats.gamesLost);
+            emit PlayerStatsUpdated(losingPlayer, loserStats.gamesPlayed, loserStats.gamesWon, loserStats.gamesLost);
         } else {
             emit TurnPlayed(gameId, currentPlayer, row, stones);
         }
+
+        // Toggle turn after everything else
+        game.playerOneTurn = !game.playerOneTurn;
+        game.lastUpdatedAt = uint48(block.timestamp);
 
         return game;
     }
@@ -219,5 +250,60 @@ contract Nim {
         }
 
         return availableGames;
+    }
+
+    /// @notice Update the top players list
+    /// @param player The player to potentially add to top players
+    function updateTopPlayers(address player) internal {
+        // If player is already in top players, no need to update
+        for (uint i = 0; i < topPlayers.length; i++) {
+            if (topPlayers[i] == player) {
+                return;
+            }
+        }
+
+        // If we haven't reached max players, add the new player
+        if (topPlayers.length < MAX_TOP_PLAYERS) {
+            topPlayers.push(player);
+            return;
+        }
+
+        // Find the player with lowest wins to potentially replace
+        uint256 lowestWins = playerStats[topPlayers[0]].gamesWon;
+        uint256 lowestIndex = 0;
+
+        for (uint i = 1; i < topPlayers.length; i++) {
+            if (playerStats[topPlayers[i]].gamesWon < lowestWins) {
+                lowestWins = playerStats[topPlayers[i]].gamesWon;
+                lowestIndex = i;
+            }
+        }
+
+        // Replace if new player has more wins
+        if (playerStats[player].gamesWon > lowestWins) {
+            topPlayers[lowestIndex] = player;
+        }
+    }
+
+    /// @notice Get the top players and their stats
+    /// @return Array of player addresses and their stats
+    function getTopPlayers() external view returns (address[] memory, PlayerStats[] memory) {
+        uint256 length = topPlayers.length;
+        address[] memory players = new address[](length);
+        PlayerStats[] memory stats = new PlayerStats[](length);
+
+        for (uint i = 0; i < length; i++) {
+            players[i] = topPlayers[i];
+            stats[i] = playerStats[topPlayers[i]];
+        }
+
+        return (players, stats);
+    }
+
+    /// @notice Get a player's stats
+    /// @param player The address of the player
+    /// @return The player's statistics
+    function getPlayerStats(address player) external view returns (PlayerStats memory) {
+        return playerStats[player];
     }
 }

@@ -88,7 +88,7 @@ contract NimTest is Test {
 
         // Store initial values
         uint8 initialStones = game.rows[0];
-
+        
         // Player1 takes some stones
         vm.prank(player1);
         game = nim.playTurn(gameId, 0, 1);
