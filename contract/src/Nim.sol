@@ -256,4 +256,16 @@ contract Nim {
         // Return the game state
         return games[gameId];
     }
+
+    /// @notice Get games available to join
+    /// @return Available games
+    function getAvailableGames() external view returns (Game[] memory) {
+        Game[] availableGames = []
+        for (uint i = 0; i < games.length; i++) {
+            if (games[i].playerTwo.address != 0) {
+                availableGames.push(games[i].gameId)
+            }
+        }
+        return availableGames;
+    }
 }
