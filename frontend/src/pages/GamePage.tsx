@@ -147,54 +147,60 @@ function GamePage() {
           />
           {/* Game board */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Game Board</h2>
-            {game?.rows.map((rowCount, index) => (
-              <div
-                key={index}
-                className={`flex items-center mb-3 p-2 rounded ${selectedRow === index ? 'bg-blue-100' : ''} ${
-                  // Only highlight rows as clickable if it's the player's turn
-                  (isPlayerOne && game.playerOneTurn) || (isPlayerTwo && !game.playerOneTurn)
-                    ? 'cursor-pointer hover:bg-gray-100'
-                    : 'opacity-80'
-                }`}
-                onClick={() => {
-                  // Only allow selection if it's the player's turn
-                  if ((isPlayerOne && game.playerOneTurn) || (isPlayerTwo && !game.playerOneTurn)) {
-                    handleRowSelect(index);
-                  }
-                }}
-              >
-                <div className="w-8 mr-4 font-bold">#{index}:</div>
-                <div className="flex-grow flex items-center">
-                  {Array.from({ length: Number(rowCount) }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-4 h-4 bg-yellow-600 rounded-full mx-1"
-                      title="Stone"
-                    />
-                  ))}
+            <h2 className="text-xl font-semibold mb-4 text-indigo-200">Game Board</h2>
+            <div className="space-y-4">
+              {game?.rows.map((rowCount, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center p-4 rounded-lg transition-all duration-200 ${
+                    selectedRow === index 
+                      ? 'bg-indigo-900/50 border-2 border-indigo-500/50' 
+                      : 'bg-indigo-950/50 border border-indigo-500/20'
+                  } ${
+                    // Only highlight rows as clickable if it's the player's turn
+                    (isPlayerOne && game.playerOneTurn) || (isPlayerTwo && !game.playerOneTurn)
+                      ? 'cursor-pointer hover:bg-indigo-900/30 hover:border-indigo-500/30'
+                      : 'opacity-60'
+                  }`}
+                  onClick={() => {
+                    // Only allow selection if it's the player's turn
+                    if ((isPlayerOne && game.playerOneTurn) || (isPlayerTwo && !game.playerOneTurn)) {
+                      handleRowSelect(index);
+                    }
+                  }}
+                >
+                  <div className="w-12 mr-4 font-bold text-indigo-300">Row {index}:</div>
+                  <div className="flex-grow flex items-center gap-2">
+                    {Array.from({ length: Number(rowCount) }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full shadow-lg shadow-yellow-500/20"
+                        title="Stone"
+                      />
+                    ))}
+                  </div>
+                  <div className="ml-4 font-medium text-indigo-200">{rowCount.toString()} stones</div>
                 </div>
-                <div className="ml-4 font-medium">{rowCount.toString()} stones</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Controls for making a move - only show if it's the player's turn */}
           {selectedRow !== null &&
             ((isPlayerOne && game?.playerOneTurn) || (isPlayerTwo && !game?.playerOneTurn)) && (
-              <div className="bg-gray-100 p-4 rounded-lg mb-6">
-                <h2 className="text-lg font-semibold mb-2">Make Your Move</h2>
-                <p className="mb-2">Selected Row: {selectedRow}</p>
+              <div className="bg-indigo-950/50 p-6 rounded-lg mb-6 border border-indigo-500/20">
+                <h2 className="text-lg font-semibold mb-4 text-indigo-200">Make Your Move</h2>
+                <p className="mb-4 text-indigo-300">Selected Row: {selectedRow}</p>
 
-                <div className="flex items-center mb-4">
-                  <label className="mr-2">Number of stones to remove:</label>
+                <div className="flex items-center gap-4 mb-6">
+                  <label className="text-indigo-300">Number of stones to remove:</label>
                   <input
                     type="number"
                     min="1"
                     max={game?.rows[selectedRow] ? Number(game.rows[selectedRow]) : 1}
                     value={selectedStones}
                     onChange={e => setSelectedStones(Number(e.target.value))}
-                    className="border rounded px-2 py-1 w-16"
+                    className="bg-indigo-900/30 border border-indigo-500/30 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50"
                   />
                 </div>
 
@@ -203,7 +209,7 @@ function GamePage() {
                   disabled={
                     selectedStones <= 0 || selectedStones > Number(game?.rows[selectedRow] || 0)
                   }
-                  className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Submit Move
                 </button>
@@ -212,9 +218,9 @@ function GamePage() {
 
           {/* Message when it's not the player's turn */}
           {((isPlayerOne && !game?.playerOneTurn) || (isPlayerTwo && game?.playerOneTurn)) && (
-            <div className="bg-yellow-100 p-4 rounded-lg mb-4">
-              <h2 className="text-lg font-semibold">Waiting for opponent's move</h2>
-              <p>It's the other player's turn.</p>
+            <div className="bg-indigo-950/50 p-6 rounded-lg mb-6 border border-indigo-500/20">
+              <h2 className="text-lg font-semibold mb-2 text-indigo-200">Waiting for opponent's move</h2>
+              <p className="text-indigo-300">It's the other player's turn.</p>
             </div>
           )}
         </>
